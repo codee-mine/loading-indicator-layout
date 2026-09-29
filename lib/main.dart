@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:loading_indicators/global_loading.dart';
 import 'package:loading_indicators/loading_indicator_preview.dart';
 import 'package:loading_indicators/state_view_preview.dart';
 
 void main() {
+  GlobalLoading.show();
+
   runApp(const MyApp());
+
+  Future.delayed(const Duration(milliseconds: 5000), GlobalLoading.hide);
 }
 
 enum AppThemeMode { system, light, dark }
@@ -40,7 +45,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Preview',
+      title: 'Layout Preview',
 
       theme: ThemeData(
         brightness: Brightness.light,
@@ -61,6 +66,10 @@ class _MyAppState extends State<MyApp> {
       ),
 
       themeMode: _materialThemeMode,
+      navigatorObservers: [GlobalLoadingNavigatorObserver()],
+      builder: (context, child) {
+        return GlobalLoadingOverlay(child: child ?? const SizedBox.shrink());
+      },
 
       home: MyHomePage(themeMode: _themeMode, onThemeChanged: _changeTheme),
     );
@@ -117,12 +126,10 @@ class MyHomePage extends StatelessWidget {
             const SizedBox(height: 32),
 
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                await GlobalLoading.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const LoadingIndicatorPreview(),
-                  ),
+                  const LoadingIndicatorPreview(),
                 );
               },
               icon: const Icon(Icons.hourglass_bottom_rounded),
@@ -132,11 +139,8 @@ class MyHomePage extends StatelessWidget {
             const SizedBox(height: 20),
 
             ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const StateViewPreview()),
-                );
+              onPressed: () async {
+                await GlobalLoading.push(context, const StateViewPreview());
               },
               icon: const Icon(Icons.layers_outlined),
               label: const Text('State View'),
